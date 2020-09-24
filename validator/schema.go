@@ -293,6 +293,15 @@ func validateDirectives(schema *Schema, dirs DirectiveList, currentDirective *Di
 		if schema.Directives[dir.Name] == nil {
 			return gqlerror.ErrorPosf(dir.Position, "Undefined directive %s.", dir.Name)
 		}
+		argMap := make(map[string]int)
+		for i, arg := range schema.Directives[dir.Name].Arguments {
+			argMap[arg.Name] = i
+		}
+		for _, arg := range dir.Arguments {
+			if _, ok := argMap[arg.Name]; !ok {
+				return gqlerror.ErrorPosf(dir.Position, "Argument %s is not valid for directive %s", arg.Name, dir.Name)
+			}
+		}
 		dir.Definition = schema.Directives[dir.Name]
 	}
 	return nil
