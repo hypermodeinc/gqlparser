@@ -281,6 +281,22 @@ func validateArgs(schema *Schema, args ArgumentDefinitionList, currentDirective 
 	return nil
 }
 
+func validateDirectivesArgs(schema *Schema, dir *Directive) *gqlerror.Error {
+	dirDefinition := schema.Directives[dir.Name]
+	possibleArgsList := dirDefinition.Arguments
+	for _, arg := range dir.Arguments {
+		if possibleArgsList.ForName(arg.Name) == nil {
+			return gqlerror.ErrorPosf(dir.Position, "Undefined argument %s for directive %s.", arg.Name, dir.Name)
+		}
+	}
+	for _, schemaArg := range possibleArgsList {
+		if schemaArg.Type.NonNull && dir.Arguments.ForName(schemaArg.Name) == nil {
+			return gqlerror.ErrorPosf(dir.Position, "Argument %s for directive %s cannot be null.", schemaArg.Name, dir.Name)
+		}
+	}
+	return nil
+}
+
 func validateDirectives(schema *Schema, dirs DirectiveList, currentDirective *DirectiveDefinition) *gqlerror.Error {
 	for _, dir := range dirs {
 		if err := validateName(dir.Position, dir.Name); err != nil {
@@ -293,14 +309,8 @@ func validateDirectives(schema *Schema, dirs DirectiveList, currentDirective *Di
 		if schema.Directives[dir.Name] == nil {
 			return gqlerror.ErrorPosf(dir.Position, "Undefined directive %s.", dir.Name)
 		}
-		argMap := make(map[string]int)
-		for i, arg := range schema.Directives[dir.Name].Arguments {
-			argMap[arg.Name] = i
-		}
-		for _, arg := range dir.Arguments {
-			if _, ok := argMap[arg.Name]; !ok {
-				return gqlerror.ErrorPosf(dir.Position, "Argument %s is not valid for directive %s", arg.Name, dir.Name)
-			}
+		if err := validateDirectivesArgs(schema, dir); err != nil {
+			return err
 		}
 		dir.Definition = schema.Directives[dir.Name]
 	}
