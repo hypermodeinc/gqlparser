@@ -3,6 +3,8 @@ gqlparser [![CircleCI](https://badgen.net/circleci/github/dgraph-io/gqlparser/v2
 
 This is a parser for graphql, written to mirror the graphql-js reference implementation as closely while remaining idiomatic and easy to use.
 
+We are actively seeking the community's help to upstream any improvements in this fork and to be able to update DGraph to use the maintained upstream!
+
 spec target: June 2018 (Schema definition language, block strings as descriptions, error paths & extension)
 
 This parser is used by [gqlgen](https://github.com/99designs/gqlgen), and it should be reasonablly stable.
